@@ -1,0 +1,64 @@
+#server:
+#  port: 8080
+#
+#eureka:
+#  instance:
+#    hostname: localhost
+#
+#spring:
+#  application:
+#    name: api-gateway
+#  cloud:
+#    gateway:
+#      globalcors:
+#        corsConfigurations:
+#          '[/**]':
+#            allowedOrigins: '*'
+#            allowedMethods: '*'
+#            allowedHeaders: '*'
+#            exposedHeaders: '*'
+#      routes:
+#        - id: authentication-service
+#          uri: lb://authentication-service
+#          predicates:
+#            - Path=/authentication-service/**
+#          filters:
+#            - RewritePath=/authentication-service(?<segment>/?.*), $\{segment}
+#
+#        - id: chat-service
+#          uri: lb://chat-service
+#          predicates:
+#            - Path=/chat-service/**
+#          filters:
+#            - RewritePath=/chat-service(?<segment>/?.*), $\{segment}
+#
+#        - id: notification-service
+#          uri: lb://notification-service
+#          predicates:
+#            - Path=/notification-service/**
+#          filters:
+#            - RewritePath=/notification-service(?<segment>/?.*), $\{segment}
+#        - id: slot-handling-service
+#          uri: lb://slot-handling-service
+#          predicates:
+#            - Path=/slot-handling/**
+#          filters:
+#            - RewritePath=/slot-handling(?<segment>/?.*), $\{segment}
+#        - id: ticket-handling-service
+#          uri: lb://ticket-handling-service
+#          predicates:
+#            - Path=/ticket-handling-service/**
+#          filters:
+#            - RewritePath=/ticket-handling-service(?<segment>/?.*), $\{segment}
+#        - id: user-service
+#          uri: lb://user-service
+#          predicates:
+#            - Path=/user-service/**
+#          filters:
+#            - RewritePath=/user-service(?<segment>/?.*), $\{segment}
+#        - id: product-webapp
+#          uri: lb://product-webapp
+#          predicates:
+#            - Path=/**
+#          filters:
+#            - RewritePath=(?<segment>/?.*), $\{segment}

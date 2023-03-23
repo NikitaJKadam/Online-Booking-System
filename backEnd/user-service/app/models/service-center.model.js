@@ -14,7 +14,8 @@ module.exports = (mongoose) => {
         street: String,
         pinCode: Number
     },
-    productCategory: [],    
+    productCategory: [],
+    reviewAndRating: []
     });
 
   const ServiceCenter = mongoose.model("ServiceCenter", serviceUserSchema, "ServiceCenter");

@@ -2,11 +2,15 @@ const { users } = require("../models");
 const db = require("../models");
 const Users = db.User;
 const ServiceCenter = db.ServiceCenter;
-// const dotenv = require("dotenv");
+const dotenv = require("dotenv");
+const publisher = require("../publisher/publisher");
+const newUserQueueName = "new-user";
+const updateUserPassword = "update-user";
 
-// dotenv.config();
+dotenv.config();
 
 //POST user registration
+
 exports.registerUser = (req, res) => {
   const users = new Users({
     _id: req.body.userEmailId,
@@ -15,7 +19,8 @@ exports.registerUser = (req, res) => {
   });
 
 users.save(users)
-    .then((data) => {     
+    .then((data) => {
+      publisher.publishMessage(newUserQueueName, {email: data._id, role: "USER", password: data.userPassword})
       res.send(data);})
       .catch((err) => {
         res.status(500).send({
@@ -33,7 +38,8 @@ users.save(users)
       userRole:"SERVICECENTER"
     });
     serviceCenter.save(serviceCenter)
-      .then(data => {    
+      .then(data => {
+        publisher.publishMessage(newUserQueueName, {email: data._id, role: "SERVICECENTER", password: data.password})
         res.send(data);
       })
       .catch(err => {
@@ -127,7 +133,8 @@ users.save(users)
         res.status(404).send("service center not found");
     } else {
       data.userPassword = req.body.userPassword ? req.body.userPassword : data?.userPassword;
-      Users.update({_id : req.body.userEmailId}, data).then(resData => {       
+      Users.update({_id : req.body.userEmailId}, data).then(resData => {
+        publisher.publishMessage(updateUserPassword, {email: data._id, role: "USER", password: data.userPassword})
         res.send({...JSON.parse(JSON.stringify(data)), userEmailId: data._id});
       })
     }
@@ -150,7 +157,8 @@ users.save(users)
           res.status(404).send("service center not found");
       } else {
         data.password = req.body.password ? req.body.password : data.password;
-        ServiceCenter.update({_id : req.body.centerEmailId}, data).then(resData => {         
+        ServiceCenter.update({_id : req.body.centerEmailId}, data).then(resData => {
+          publisher.publishMessage(updateUserPassword, {email: data._id, role: "SERVICECENTER", password: data.password})
           res.send({...JSON.parse(JSON.stringify(data)), centerEmailId: data._id});
         })
       }
@@ -282,7 +290,34 @@ users.save(users)
       });
   };
 
-  
- 
-
-   
+  exports.updateRating = (req, res) => {
+    ServiceCenter.find({
+      _id: req.params.emailId
+    })
+      .then((resData) => {
+          if(resData) {
+            let data = resData[0];
+            if(data.reviewAndRating) {
+              data.reviewAndRating.push(req.body);
+              let sum = data.reviewAndRating.map(rating => rating.userRating).reduce((prev, next) => prev + next);
+              data.avgRating = Math.round((sum/data.reviewAndRating.length) * 10) / 10;
+            } else {
+              data.avgRating = req.userRating;
+              data.reviewAndRating = [req.body];
+            }
+            ServiceCenter.update({_id: req.params.emailId}, data).then(resData => {
+              res.send(resData);
+            });
+          } else {
+            res.status(404).send({
+              message: "Service Center not found"
+            });
+          }
+      })
+      .catch((err) => {
+        res.status(500).send({
+          message: err.message || "Error Occured while Retried data withe the",
+          userEmailId,
+        });
+      });
+  };

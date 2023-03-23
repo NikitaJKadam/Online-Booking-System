@@ -12,7 +12,7 @@ module.exports = (app) => {
     router.put("/updateServicecenter", users.serviceCenterUpdate);
     router.put("/reg/passwordupdate", users.userPasswordUpdate);
     router.put("/reg/updatePassword", users.serviceCenterPasswordUpdate);
-   
+    router.put("/ReviewAndRating/:emailId", users.updateRating);
 
     router.get("/reg/user/:emailId", users.getUserDetailsByEmailId);
     router.get("/reg/serviceCenter/:emailId", users.getserviceCenterDetailsByEmailId);
